@@ -143,7 +143,7 @@ class _ContentClientAuthWidgetState extends State<ContentClientAuthWidget> {
         ),
         SizedBox(height: 20.h),
         CustomInputField(
-          label: 'رقم الجوال',
+          label: 'رقم الجوال  ',
           icon: Icons.phone,
           controller: widget.mobileController,
           focusNode: widget.mobileFocus,

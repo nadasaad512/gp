@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gp/core/text_styles.dart';
 import 'package:gp/date/Provider/UserProvider.dart';
 import 'package:gp/date/modules/cart.dart';
+import 'package:gp/features/user/products/ProductDetails.dart';
 import 'package:gp/features/user/showProfileAdmin.dart';
+import 'package:gp/features/widget/button.dart';
 import 'package:gp/features/widget/loadingWidget.dart';
 import 'package:provider/provider.dart';
 import '../../../core/app_colors.dart';
@@ -44,7 +47,7 @@ class _RequestScreenState extends State<RequestScreen> {
                 : provider.request.isEmpty
                     ? Center(
                         child: Text(
-                          "لم تقم بطلب أي طلب من قبل",
+                          "\n \n \n \n   \nلم تقم بطلب أي طلب من قبل",
                           style: TextStyle(
                             fontWeight: FontWeight.w400,
                             fontSize: 24.sp,
@@ -70,63 +73,104 @@ class _RequestScreenState extends State<RequestScreen> {
   }
 
   Widget requestItem(CartModel request) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => showProfileAdmin(
-                    idAdmin: request.product.idAdmin,
-                  )),
-        );
-      },
-      child: Container(
+    return Container(
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 24),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.green),
           borderRadius: BorderRadius.circular(15),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 100.w,
-              height: 100.h,
-              alignment: Alignment.topRight,
-              decoration: BoxDecoration(
-                  image: DecorationImage(
-                      image: NetworkImage(request.product.image))),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Text(
-                  request.product.name,
+                Container(
+                  width: 100.w,
+                  height: 100.h,
+                  alignment: Alignment.topRight,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: NetworkImage(request.product.image))),
                 ),
-                SizedBox(
-                  height: 10.h,
-                ),
-                Text(
-                  "الكمية: ${request.product.count}   السعر: ${request.product.price} شيكل",
-                ),
-                SizedBox(
-                  height: 10.h,
-                ),
-                Text(
-                  " صيدلية ${request.product.nameAdmin} ",
-                  style: TextStyle(
-                    decoration: TextDecoration.underline,
-                    decorationColor: AppColors.primary,
-                    color: AppColors.primary,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(
+                      request.product.name + '  ' + request.product.focus,
+                    ),
+                    SizedBox(
+                      height: 10.h,
+                    ),
+                    Text(
+                      "الكمية: ${request.quantity}   السعر: ${int.parse(request.product.price) * request.quantity} شيكل",
+                    ),
+                    SizedBox(
+                      height: 10.h,
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => showProfileAdmin(
+                                    idAdmin: request.product.idAdmin,
+                                  )),
+                        );
+                      },
+                      child: Text(
+                        " صيدلية ${request.product.nameAdmin} ",
+                        style: TextStyle(
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppColors.primary,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
+            SizedBox(
+              height: 10.h,
+            ),
+            SizedBox(
+              height: 30.h,
+              child: ElevatedButton(
+                onPressed: () async {
+                  await Provider.of<UserProvider>(context, listen: false)
+                      .getOneProduct(request);
+                  CartModel? cart =
+                      Provider.of<UserProvider>(context, listen: false)
+                          .oneProduct;
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ProductDetails(
+                              name: request.namecart,
+                              product: cart!.product,
+                            )),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                ),
+                child: Text(
+                  "اطلبه مرة اخرى ",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 10.h,
+            ),
           ],
-        ),
-      ),
-    );
+        ));
   }
 }

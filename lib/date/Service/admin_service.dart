@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:gp/core/app_colors.dart';
 import 'package:gp/date/modules/admain_user.dart';
 import 'package:gp/date/modules/category.dart';
 import 'package:gp/date/modules/notification.dart';
@@ -73,6 +75,25 @@ class AdminService {
     }
   }
 
+  Future<List<CategoryModel>> userFetchAdminCategories(String id) async {
+    try {
+      QuerySnapshot snapshot = await _firestore
+          .collection('admin_users')
+          .doc(id)
+          .collection('Category')
+          .get();
+
+      List<CategoryModel> categories = snapshot.docs.map((doc) {
+        return CategoryModel.fromMap(doc.data() as Map<String, dynamic>);
+      }).toList();
+
+      return categories;
+    } catch (e) {
+      print('Error fetching categories: $e');
+      return [];
+    }
+  }
+
   Future<List<CategoryModel>> fetchAdminCategories() async {
     final userId = await getUserId();
     try {
@@ -93,17 +114,23 @@ class AdminService {
     }
   }
 
-  Future<void> deleteCategory(String docId) async {
+  Future<void> deleteCategory(BuildContext context, docId) async {
     final userId = await getUserId();
 
     try {
       await FirebaseFirestore.instance
           .collection('admin_users')
           .doc(userId)
-          .collection('categories')
+          .collection('Category')
           .doc(docId)
           .delete();
-      print("تم حذف القسم بنجاح");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.primary,
+          content: Text("تم حذف القسم بنجاح"),
+          duration: Duration(seconds: 2),
+        ),
+      );
     } catch (e) {
       print("فشل الحذف: $e");
     }
@@ -162,7 +189,7 @@ class AdminService {
           image: imageUrl,
           dec: product.dec,
           price: product.price,
-          count: product.count,
+          focus: product.focus,
           idAdmin: userId.toString(),
           nameAdmin: userName.toString());
 
@@ -212,7 +239,7 @@ class AdminService {
       await productRef.update({
         'id': updatedProduct.id,
         'name': updatedProduct.name,
-        'count': updatedProduct.count,
+        'count': updatedProduct.focus,
         'price': updatedProduct.price,
         'dec': updatedProduct.dec,
         'idAdmin': userId.toString(),
@@ -223,6 +250,30 @@ class AdminService {
     } catch (e) {
       print("حدث خطأ أثناء تحديث المنتج: $e");
       rethrow;
+    }
+  }
+
+  Future<void> deleteProduct(docId, docIdProduct) async {
+    final userId = await getUserId();
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('admin_users')
+          .doc(userId)
+          .collection('Category')
+          .doc(docId)
+          .collection('products')
+          .doc(docIdProduct)
+          .delete();
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(
+      //     backgroundColor: AppColors.primary,
+      //     content: Text("تم حذف المنتج بنجاح"),
+      //     duration: Duration(seconds: 2),
+      //   ),
+      // );
+    } catch (e) {
+      print("فشل الحذف: $e");
     }
   }
 
@@ -279,6 +330,7 @@ class AdminService {
           .collection('admin_users')
           .doc(userId)
           .collection('Notification')
+          .orderBy('createdAt', descending: true)
           .get();
 
       List<NotificationModel> notifications = snapshot.docs.map((doc) {

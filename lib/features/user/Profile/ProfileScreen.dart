@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gp/date/Provider/UserProvider.dart';
+import 'package:gp/date/Service/auth_service.dart';
 import 'package:gp/date/modules/client_user.dart';
 import 'package:gp/features/user/Profile/widget/ProfileWidget.dart';
 import 'package:gp/features/widget/loadingWidget.dart';
@@ -47,6 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _mobileController.text = user!.phone;
     _addressController.text = user!.address;
     _emailController.text = user!.email;
+    _addressController.text = user!.address;
     city = user!.city;
     area = user!.area;
 
@@ -149,14 +151,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           isEnable: false,
                         ),
                         SizedBox(height: 20.h),
-                        Align(
-                          alignment: Alignment.topRight,
-                          child: Text(
-                            "تغير كلمة المرور",
-                            style: TextStyle(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w400,
-                              decoration: TextDecoration.underline,
+                        GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => ChangePasswordDialog(),
+                            );
+                          },
+                          child: Align(
+                            alignment: Alignment.topRight,
+                            child: Text(
+                              "تغير كلمة المرور",
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w400,
+                                decoration: TextDecoration.underline,
+                              ),
                             ),
                           ),
                         ),
@@ -175,4 +185,132 @@ Widget TextWidget(String name) {
     name,
     style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w400),
   );
+}
+
+class ChangePasswordDialog extends StatelessWidget {
+  final oldPasswordController = TextEditingController();
+  final newPasswordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // العنوان وصف الإغلاق
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'تغير كلمة المرور',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                )
+              ],
+            ),
+            SizedBox(height: 10.h),
+            // الحقول
+            _buildField(oldPasswordController, 'كلمة المرور القديمة'),
+            SizedBox(height: 10.h),
+            _buildField(newPasswordController, 'كلمة المرور الجديدة'),
+            SizedBox(height: 10.h),
+            _buildField(confirmPasswordController, 'تأكيد كلمة المرور'),
+            SizedBox(height: 20.h),
+            // زر الحفظ
+            ElevatedButton(
+              onPressed: () async {
+                final oldPass = oldPasswordController.text.trim();
+                final newPass = newPasswordController.text.trim();
+                final confirmPass = confirmPasswordController.text.trim();
+
+                if (oldPass.isEmpty || newPass.isEmpty || confirmPass.isEmpty) {
+                  // ممكن تضيفي رسالة خطأ للمستخدم
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('يرجى ملء جميع الحقول'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+
+                if (newPass != confirmPass) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content:
+                          Text('كلمة المرور الجديدة وتأكيدها غير متطابقين'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+
+                // استدعاء دالة تغيير كلمة المرور من AuthService
+                final authService = AuthService();
+                String? result = await authService.changePassword(
+                  oldPassword: oldPass,
+                  newPassword: newPass,
+                );
+
+                if (result == null) {
+                  // نجاح
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('تم تحديث كلمة المرور بنجاح'),
+                      backgroundColor: AppColors.primary,
+                    ),
+                  );
+                  Navigator.pop(context);
+                } else {
+                  // خطأ
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(result)),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.green,
+              ),
+              child: Text('حفظ'),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildField(TextEditingController controller, String hint) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: true,
+        textAlign: TextAlign.right,
+        decoration: InputDecoration(
+          hintText: hint,
+          contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+          border: InputBorder.none,
+        ),
+      ),
+    );
+  }
 }

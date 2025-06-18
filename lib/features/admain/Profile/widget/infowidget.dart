@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/app_colors.dart';
 
 class AddressWidget extends StatelessWidget {
@@ -7,11 +8,15 @@ class AddressWidget extends StatelessWidget {
   String area;
   String city;
   String dec;
+  String phone;
+  bool isAdmin;
   AddressWidget(
       {required this.address,
       required this.area,
       required this.city,
-      required this.dec});
+      required this.dec,
+      required this.phone,
+      this.isAdmin = true});
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -39,6 +44,66 @@ class AddressWidget extends StatelessWidget {
             style: TextStyle(fontSize: 16.sp, color: AppColors.black),
           ),
         ),
+        SizedBox(
+          height: 20.h,
+        ),
+        isAdmin == false
+            ? Column(
+                children: [
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Text(
+                      "      اطلب عبر الروشتة      ",
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 20.h,
+                  ),
+                  GestureDetector(
+                      onTap: () => openWhatsApp(),
+                      child:
+                          Center(child: Image.asset("assets/images/prov.png"))),
+                  SizedBox(
+                    height: 20.h,
+                  ),
+                  Text(
+                    "أرفق صورة",
+                    style: TextStyle(
+                        fontSize: 16.sp,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w500),
+                  )
+                ],
+              )
+            : SizedBox.shrink(),
+        isAdmin == false
+            ? SizedBox(
+                height: 20.h,
+              )
+            : SizedBox.shrink(),
+        isAdmin == false
+            ? GestureDetector(
+                onTap: () => openWhatsApp(),
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: Text(
+                    "اسأل صيدلي ",
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      color: AppColors.primary,
+                      decoration: TextDecoration.underline,
+                      decorationColor: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              )
+            : SizedBox.shrink()
       ],
     );
   }
@@ -77,4 +142,27 @@ class AddressWidget extends StatelessWidget {
       ),
     );
   }
+
+  void openWhatsApp() async {
+    final phoneNumber = '972592310956';
+    final url = 'https://wa.me/$phoneNumber';
+
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      print("لا يمكن فتح واتساب");
+    }
+  }
+
+  // void openWhatsApp() async {
+  //   final phoneNumber = '972592310956';
+
+  //   final Uri url = Uri.parse("https://wa.me/$phoneNumber");
+
+  //   if (await canLaunchUrl(url)) {
+  //     await launchUrl(url, mode: LaunchMode.externalApplication);
+  //   } else {
+  //     print("لا يمكن فتح واتساب");
+  //   }
+  // }
 }

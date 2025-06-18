@@ -11,7 +11,9 @@ import 'package:provider/provider.dart';
 
 class ProductScreen extends StatefulWidget {
   String name;
-  ProductScreen(this.name);
+  bool isOneUser;
+  String idAdmin;
+  ProductScreen(this.name, {this.isOneUser = false, this.idAdmin = ""});
   @override
   State<ProductScreen> createState() => _ProductScreenState();
 }
@@ -28,8 +30,11 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   Future<void> _loadData() async {
-    await Provider.of<UserProvider>(context, listen: false)
-        .fetchProducts(name: widget.name);
+    widget.isOneUser == false
+        ? await Provider.of<UserProvider>(context, listen: false)
+            .fetchProducts(name: widget.name)
+        : await Provider.of<UserProvider>(context, listen: false)
+            .userFetchProducts(name: widget.name, userId: widget.idAdmin);
 
     setState(() {
       _isLoading = false;

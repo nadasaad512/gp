@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gp/core/app_colors.dart';
 import 'package:gp/date/Provider/AdminProvider.dart';
 import 'package:gp/date/modules/admain_user.dart';
 import 'package:gp/date/modules/category.dart';
 import 'package:gp/features/admain/Profile/widget/infowidget.dart';
+import 'package:gp/features/user/products/ProductScreen.dart';
 import 'package:gp/features/widget/BgProfileAdmainWidget.dart';
 import 'package:gp/features/widget/loadingWidget.dart';
 import 'package:provider/provider.dart';
@@ -28,10 +28,11 @@ class _showProfileAdminState extends State<showProfileAdmin> {
   }
 
   Future<void> _loadAdminUser() async {
+    print("widget.idAdmin${widget.idAdmin}");
     AdminUser? admin = await Provider.of<AdminProvider>(context, listen: false)
         .getUserById(widget.idAdmin.toString());
     await Provider.of<AdminProvider>(context, listen: false)
-        .fetchAdminCategories();
+        .userFetchAdminCategories(widget.idAdmin.toString());
     setState(() {
       adminUser = admin;
       _isLoading = false;
@@ -63,17 +64,17 @@ class _showProfileAdminState extends State<showProfileAdmin> {
                       area: adminUser!.arae,
                       city: adminUser!.city,
                       dec: adminUser!.desc,
+                      phone: adminUser!.phone,
+                      isAdmin: false,
                     ),
                     SizedBox(height: 20.h),
                     TextTitle('الأقسام'),
-                    if (adminProvider.adminCategory.isNotEmpty)
+                    if (adminProvider.userAdminCategory.isNotEmpty)
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: GridView.builder(
-                            itemCount: adminProvider.adminCategory.length,
+                            itemCount: adminProvider.userAdminCategory.length,
                             gridDelegate:
                                 SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 3,
@@ -83,11 +84,13 @@ class _showProfileAdminState extends State<showProfileAdmin> {
                             ),
                             itemBuilder: (context, index) {
                               return categoryItem(
-                                  adminProvider.adminCategory[index]);
+                                  adminProvider.userAdminCategory[index]);
                             },
                           ),
                         ),
                       )
+                    else
+                      Text('لا توجد أقسام حالياً')
                   ],
                 ),
         );
@@ -96,23 +99,36 @@ class _showProfileAdminState extends State<showProfileAdmin> {
   }
 
   Widget categoryItem(CategoryModel cat) {
-    return Column(
-      children: [
-        Expanded(
-          child: Container(
-            margin: EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: Colors.green[50],
-              image: DecorationImage(
-                image: NetworkImage(cat.image),
-                fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => ProductScreen(
+                    cat.name,
+                    idAdmin: widget.idAdmin,
+                    isOneUser: true,
+                  )),
+        );
+      },
+      child: Column(
+        children: [
+          Expanded(
+            child: Container(
+              margin: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.green[50],
+                image: DecorationImage(
+                  image: NetworkImage(cat.image),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
-        ),
-        Text(cat.name, style: TextStyle(fontSize: 14)),
-      ],
+          Text(cat.name, style: TextStyle(fontSize: 14)),
+        ],
+      ),
     );
   }
 

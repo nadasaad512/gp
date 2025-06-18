@@ -2,8 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:gp/date/Storge/local_storage_service.dart';
-import '../../features/admain/Main/admainmainscreen.dart';
-import '../../features/user/main/mainscreen.dart';
+import 'package:gp/features/auth/AuthScreen.dart';
 import '../Service/auth_service.dart';
 import '../modules/admain_user.dart';
 import '../modules/client_user.dart';
@@ -20,22 +19,11 @@ class AuthProvider with ChangeNotifier {
       {required String email, required String password}) async {
     isSign = true;
     notifyListeners();
-    String? value =
-        await _authService.signInWithEmail(email: email, password: password);
+
+    await _authService.signInWithEmail(
+        email: email, password: password, context: context);
     isSign = false;
     notifyListeners();
-    value == "admin"
-        ? Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => AdmainMainScreen()),
-          )
-        : null;
-    value == "client"
-        ? Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => MainScreen()),
-          )
-        : null;
   }
 
   Future<bool> adminSignUp(BuildContext context,
@@ -70,7 +58,10 @@ class AuthProvider with ChangeNotifier {
 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => AdmainMainScreen()),
+      MaterialPageRoute(
+          builder: (context) => AuthScreen(
+                isAdmain: true,
+              )),
     );
 
     return true;
@@ -102,8 +93,15 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => MainScreen()),
+      MaterialPageRoute(
+          builder: (context) => AuthScreen(
+                isAdmain: false,
+              )),
     );
     return true;
+  }
+
+  logout(BuildContext context) async {
+    await _authService.logout(context);
   }
 }

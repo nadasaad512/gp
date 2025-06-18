@@ -11,6 +11,7 @@ class AdminProvider with ChangeNotifier {
   List<CategoryModel> category = [];
   List<ProductModel> products = [];
   List<CategoryModel> adminCategory = [];
+  List<CategoryModel> userAdminCategory = [];
   List<NotificationModel> notification = [];
   AdminUser? adminUser;
 
@@ -38,6 +39,22 @@ class AdminProvider with ChangeNotifier {
     return adminCategory;
   }
 
+  Future<List<CategoryModel>> userFetchAdminCategories(String id) async {
+    print("id ${id}");
+    userAdminCategory = await _adminService.userFetchAdminCategories(id);
+    userAdminCategory;
+    notifyListeners();
+    print("userAdminCategory ${userAdminCategory.length}");
+    return adminCategory;
+  }
+
+  Future<void> deletAdminCategories(BuildContext context, docId) async {
+    await _adminService.deleteCategory(context, docId);
+    await fetchAdminCategories();
+    adminCategory;
+    notifyListeners();
+  }
+
   Future<void> updateAdminProfile(AdminUser user) async {
     await _adminService.updateAdminProfile(user: user);
   }
@@ -48,6 +65,11 @@ class AdminProvider with ChangeNotifier {
         product: product, catId: catId, imageFile: imageFile);
     await getProductsById(catId);
     notifyListeners();
+  }
+
+  Future<void> deletProducts(docId, docIdProduct) async {
+    await _adminService.deleteProduct(docId, docIdProduct);
+    await fetchProducts(docId);
   }
 
   Future<void> editProducts(

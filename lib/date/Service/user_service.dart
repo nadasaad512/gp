@@ -9,6 +9,8 @@ import 'package:gp/date/modules/notification.dart';
 import 'package:gp/date/modules/orders.dart';
 import 'package:gp/date/modules/products.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -155,6 +157,40 @@ class UserService {
     }
 
     print("📦 عدد المنتجات بعد الفلترة: ${allProducts.length}");
+
+    return allProducts;
+  }
+
+  Future<List<ProductModel>> userFetchProducts(
+      String userId, String name) async {
+    List<ProductModel> allProducts = [];
+
+    // جلب الفئات التي لها نفس الاسم داخل المستخدم المحدد
+    final categoriesSnapshot = await FirebaseFirestore.instance
+        .collection('admin_users')
+        .doc(userId)
+        .collection('Category')
+        .where('name', isEqualTo: name)
+        .get();
+
+    for (final categoryDoc in categoriesSnapshot.docs) {
+      final categoryId = categoryDoc.id;
+
+      final productsSnapshot = await FirebaseFirestore.instance
+          .collection('admin_users')
+          .doc(userId)
+          .collection('Category')
+          .doc(categoryId)
+          .collection('products')
+          .get();
+
+      for (final productDoc in productsSnapshot.docs) {
+        final productData = productDoc.data();
+        final product = ProductModel.fromMap(productData);
+        allProducts.add(product);
+        print(allProducts.length);
+      }
+    }
 
     return allProducts;
   }
@@ -308,7 +344,6 @@ class UserService {
     try {
       // 1. إرسال الطلبات وحذفها من السلة
       for (CartModel cartData in cartList) {
-        // إضافة المنتج إلى طلبات المستخدم
         await FirebaseFirestore.instance
             .collection('client_users')
             .doc(userId)
@@ -331,30 +366,34 @@ class UserService {
       Map<String, List<ProductItemModel>> groupedProducts = {};
       for (var cartData in cartList) {
         final idAdmin = cartData.product.idAdmin;
-        print("isadmin ${idAdmin}");
         groupedProducts.putIfAbsent(idAdmin, () => []);
         groupedProducts[idAdmin]!.add(
           ProductItemModel(
-              nameProduct: cartData.product.name,
-              countProduct: cartData.quantity.toString(),
-              price: cartData.product.price),
+            nameProduct: cartData.product.name,
+            countProduct: cartData.quantity.toString(),
+            price: cartData.product.price,
+          ),
         );
       }
 
-      // 3. تجهيز قائمة الإشعارات
+      // 3. تجهيز قائمة الإشعارات بدون createdAt
       List<NotificationModel> notifications = [];
       groupedProducts.forEach((idAdmin, products) {
-        final notification = NotificationModel(
-          nameUser: "${user!.name1} ${user.name2}",
-          addressUser: user.address,
-          phoneUser: user.phone,
-          idAdmin: idAdmin,
-          products: products,
+        notifications.add(
+          NotificationModel(
+            id: "",
+            nameUser: "${user!.name1} ${user.name2}",
+            addressUser: user.address,
+            phoneUser: user.phone,
+            idAdmin: idAdmin,
+            products: products,
+            createdAt: null, // نتركها null لأنها فقط للقراءة
+            isSeen: false,
+          ),
         );
-        notifications.add(notification);
       });
 
-      // 4. إرسال كل الإشعارات دفعة واحدة
+      // 4. إرسال الإشعارات
       await sendNotification(notifications);
 
       // 5. إشعار النجاح
@@ -370,7 +409,63 @@ class UserService {
     }
   }
 
-  Future<void> deletProductToCart({
+  Future<List<NotificationModel>> sendNotification(
+      List<NotificationModel> orders) async {
+    final Map<String, List<NotificationModel>> grouped = {};
+
+    for (var order in orders) {
+      grouped.putIfAbsent(order.idAdmin, () => []);
+      grouped[order.idAdmin]!.add(order);
+    }
+
+    List<NotificationModel> addedNotifications = [];
+
+    for (var entry in grouped.entries) {
+      final idAdmin = entry.key;
+      final orderList = entry.value;
+
+      final products = orderList.expand((order) => order.products).toList();
+
+      final notificationData = {
+        'nameUser': orderList.first.nameUser,
+        'addressUser': orderList.first.addressUser,
+        'phoneUser': orderList.first.phoneUser,
+        'idAdmin': idAdmin,
+        'products': products.map((e) => e.toMap()).toList(),
+        'createdAt': FieldValue.serverTimestamp(),
+        'isSeen': false,
+      };
+
+      // 🟢 نضيف الإشعار ونأخذ الـ id
+      final docRef = await FirebaseFirestore.instance
+          .collection('admin_users')
+          .doc(idAdmin)
+          .collection('Notification')
+          .add(notificationData);
+
+// ✳️ أضف الـ id داخل المستند
+      await docRef.update({'id': docRef.id});
+
+      // 🟢 نضيف نسخة من NotificationModel مع id
+      addedNotifications.add(
+        NotificationModel(
+          id: docRef.id, // ← أضف الـ id هنا
+          nameUser: orderList.first.nameUser,
+          addressUser: orderList.first.addressUser,
+          phoneUser: orderList.first.phoneUser,
+          idAdmin: idAdmin,
+          products: products,
+          createdAt: null, // فقط للقراءة لاحقًا
+          isSeen: false,
+        ),
+      );
+    }
+
+    return addedNotifications;
+  }
+
+  Future<void> deletProductToCart(
+    BuildContext context, {
     required String idProduct,
   }) async {
     final userId = await getUserId();
@@ -383,42 +478,14 @@ class UserService {
           .collection('cart')
           .doc(idProduct)
           .delete();
-    } catch (e) {}
-  }
-
-  Future<void> sendNotification(List<NotificationModel> orders) async {
-    final Map<String, List<NotificationModel>> grouped = {};
-
-    // 1. تجميع الطلبات حسب idAdmin
-    for (var order in orders) {
-      grouped.putIfAbsent(order.idAdmin, () => []);
-      grouped[order.idAdmin]!.add(order);
-    }
-
-    // 2. لكل مجموعة (لكل صيدلية)
-    for (var entry in grouped.entries) {
-      final idAdmin = entry.key;
-      final orderList = entry.value;
-
-      // 3. دمج كل المنتجات في قائمة واحدة
-      final products = orderList.expand((order) => order.products).toList();
-
-      // 4. إنشاء الإشعار الموحد
-      final notification = NotificationModel(
-        nameUser: orderList.first.nameUser,
-        addressUser: orderList.first.addressUser,
-        phoneUser: orderList.first.phoneUser,
-        idAdmin: idAdmin,
-        products: products,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.primary,
+          content: Text('تم حذف المنتج بنجاح'),
+          duration: Duration(seconds: 2),
+        ),
       );
-
-      // 5. إرسال الإشعار
-      await FirebaseFirestore.instance
-          .collection('admin_users')
-          .doc(idAdmin)
-          .collection('Notification')
-          .add(notification.toMap());
-    }
+    } catch (e) {}
   }
 
   Future<List<CartModel>> getRequest() async {
@@ -522,6 +589,46 @@ class UserService {
     } catch (e) {
       print('Error getting cart: $e');
       return [];
+    }
+  }
+
+  Future<CartModel?> getOneProduct(CartModel cart) async {
+    try {
+      // أولًا: نبحث عن التصنيف بناءً على الاسم
+      final categorySnapshot = await _firestore
+          .collection('admin_users')
+          .doc(cart.product.idAdmin)
+          .collection('Category')
+          .where('name', isEqualTo: cart.namecart)
+          .get();
+
+      if (categorySnapshot.docs.isEmpty) {
+        print('التصنيف غير موجود');
+        return null;
+      }
+
+      // نحصل على ID التصنيف الصحيح
+      final categoryDocId = categorySnapshot.docs.first.id;
+
+      // ثم ندخل إلى مجموعة المنتجات داخل هذا التصنيف
+      final productSnapshot = await _firestore
+          .collection('admin_users')
+          .doc(cart.product.idAdmin)
+          .collection('Category')
+          .doc(categoryDocId)
+          .collection('products')
+          .doc(cart.product.id)
+          .get();
+
+      if (productSnapshot.exists) {
+        return CartModel.fromMap(productSnapshot.data()!);
+      } else {
+        print('المنتج غير موجود داخل هذا التصنيف');
+        return null;
+      }
+    } catch (e) {
+      print('حدث خطأ أثناء جلب المنتج: $e');
+      return null;
     }
   }
 }

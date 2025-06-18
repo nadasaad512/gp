@@ -38,12 +38,14 @@ class _RecommendedWidgetState extends State<RecommendedWidget> {
             return AnimatedContainer(
               duration: Duration(milliseconds: 300),
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                //  color: AppColors.primary,
                 image: widget.recommended == [] || widget.recommended.isEmpty
                     ? null
                     : DecorationImage(
+                        fit: BoxFit.cover,
                         image: NetworkImage(widget.recommended[index].image)),
                 borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(color: AppColors.primary),
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.primary.withOpacity(0.4),

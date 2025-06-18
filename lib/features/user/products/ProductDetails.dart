@@ -4,7 +4,6 @@ import 'package:gp/core/app_colors.dart';
 import 'package:gp/date/Provider/UserProvider.dart';
 import 'package:gp/date/modules/cart.dart';
 import 'package:gp/date/modules/products.dart';
-import 'package:gp/features/admain/Profile/ProfileScreen.dart';
 import 'package:gp/features/user/Home/widget/BgHomeWidget.dart';
 import 'package:gp/features/user/showProfileAdmin.dart';
 import 'package:gp/features/widget/button.dart';
@@ -55,7 +54,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(widget.product.name,
+                    Text(widget.product.name + " " + widget.product.focus,
                         style: TextStyle(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w500,
@@ -120,7 +119,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                 Align(
                   alignment: Alignment.center,
                   child: Container(
-                    width: 200.w,
+                    width: 150.w,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       border: Border.all(
@@ -136,13 +135,12 @@ class _ProductDetailsState extends State<ProductDetails> {
                             setState(() => count--);
                           }
                         }),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 30.w),
-                          child: Text(
-                            '$count',
-                            style: TextStyle(fontSize: 18),
-                          ),
+                        Spacer(),
+                        Text(
+                          '$count',
+                          style: TextStyle(fontSize: 18),
                         ),
+                        Spacer(),
                         _buildCircleButton(Icons.add, () {
                           setState(() => count++);
                         }),

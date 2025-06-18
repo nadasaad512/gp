@@ -71,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _navigateToNextScreen() async {
     final prefs = await SharedPreferences.getInstance();
     final String? userType = prefs.getString('type');
-    //prefs.clear();
+    print("11111111${prefs.getString('uid')}");
 
     if (userType == 'admin') {
       Navigator.pushReplacement(

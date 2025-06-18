@@ -41,7 +41,14 @@ class MenuWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Spacer(),
-                    SvgPicture.asset("assets/icons/menu_icon.svg"),
+                    IconButton(
+                        onPressed: onTap,
+                        icon: Icon(
+                          Icons.logout,
+                          color: Colors.white,
+                          size: 25.sp,
+                        )),
+                    // SvgPicture.asset("assets/icons/menu_icon.svg"),
                     SizedBox(
                       width: 16.w,
                     )

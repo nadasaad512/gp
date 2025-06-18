@@ -69,12 +69,18 @@ class _HomeScreenState extends State<HomeScreen> {
                               : RecommendedWidget(
                                   recommended: provider.recommended,
                                 ),
+                          provider.nearbyPharmac.isEmpty
+                              ? SizedBox.shrink()
+                              : SizedBox(height: 20.h),
+                          provider.nearbyPharmac.isEmpty
+                              ? SizedBox.shrink()
+                              : TitleTextHomeWidget(title: "صيدليات قريبة منك"),
                           SizedBox(height: 20.h),
-                          TitleTextHomeWidget(title: "صيدليات قريبة منك"),
-                          SizedBox(height: 20.h),
-                          NearbyPharmaciesWidget(
-                            nearbyPharmac: provider.nearbyPharmac,
-                          ),
+                          provider.nearbyPharmac.isEmpty
+                              ? SizedBox.shrink()
+                              : NearbyPharmaciesWidget(
+                                  nearbyPharmac: provider.nearbyPharmac,
+                                ),
                           TitleTextHomeWidget(title: "الأقسام"),
                           SizedBox(height: 20.h),
                           CategoriesWidget(

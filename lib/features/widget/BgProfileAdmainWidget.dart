@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../core/app_colors.dart';
 import '../admain/Profile/widget/MenuWidget.dart';
 
 class BgProfileAdmainWidget extends StatelessWidget {
@@ -24,7 +23,7 @@ class BgProfileAdmainWidget extends StatelessWidget {
               radius: 40.r,
               backgroundColor: Colors.white,
               backgroundImage: NetworkImage(image),
-              child: Icon(Icons.person, size: 40.sp, color: AppColors.primary),
+              //  child: Icon(Icons.person, size: 40.sp, color: AppColors.primary),
             ),
           ),
         ),

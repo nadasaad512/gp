@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:gp/core/app_colors.dart';
 import 'package:gp/date/Provider/AdminProvider.dart';
 import 'package:gp/date/modules/products.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,7 +16,7 @@ class AddMedicineDialog {
       {bool isEdit = false, ProductModel? product}) {
     if (isEdit && product != null) {
       nameController.text = product.name;
-      countController.text = product.count;
+      countController.text = product.focus;
       priceController.text = product.price;
       decController.text = product.dec;
     }
@@ -36,7 +37,7 @@ class AddMedicineDialog {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildTextField(nameController, "اسم الدواء"),
-                  _buildTextField(countController, "النوع"),
+                  _buildTextField(countController, "التركيز"),
                   _buildTextField(priceController, "السعر",
                       keyboardType: TextInputType.number),
                   _buildTextField(decController, "تفاصيل الاستخدام",
@@ -104,7 +105,10 @@ class AddMedicineDialog {
                         child: CircularProgressIndicator(
                             color: Colors.white, strokeWidth: 2),
                       )
-                    : Text(isEdit ? "تعديل" : "إضافة"),
+                    : Text(
+                        isEdit ? "تعديل" : "إضافة",
+                        style: TextStyle(color: Colors.white),
+                      ),
               ),
             ],
           ),
@@ -118,13 +122,25 @@ class AddMedicineDialog {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: TextField(
+        cursorColor: AppColors.primary,
         controller: controller,
         keyboardType: keyboardType,
         maxLines: maxLines,
         textDirection: TextDirection.rtl,
         decoration: InputDecoration(
           labelText: label,
-          border: const OutlineInputBorder(),
+          labelStyle: TextStyle(
+            color: AppColors.primary,
+          ),
+          focusColor: AppColors.primary,
+          focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(
+            color: AppColors.primary,
+          )),
+          border: const OutlineInputBorder(
+              borderSide: BorderSide(
+            color: AppColors.primary,
+          )),
         ),
       ),
     );
@@ -134,7 +150,6 @@ class AddMedicineDialog {
       BuildContext context, File? selectedImage, String id,
       {bool isEdit = false, ProductModel? product}) async {
     if (nameController.text.isNotEmpty &&
-        countController.text.isNotEmpty &&
         priceController.text.isNotEmpty &&
         decController.text.isNotEmpty &&
         (selectedImage != null || (isEdit && product != null))) {
@@ -144,7 +159,7 @@ class AddMedicineDialog {
           image: product?.image ?? "",
           dec: decController.text,
           price: priceController.text,
-          count: countController.text,
+          focus: countController.text.isEmpty ? "" : countController.text,
           idAdmin: '',
           nameAdmin: '');
 

@@ -108,6 +108,16 @@ class _AHomeScreenState extends State<AHomeScreen> {
                             child: CardInfoWidget(
                               image: category.image,
                               name: category.name,
+                              onDelete: () async {
+                                setState(() {
+                                  _isLoading = true;
+                                });
+                                await adminProvider.deletAdminCategories(
+                                    context, category.id);
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                              },
                             ));
                       },
                     ),

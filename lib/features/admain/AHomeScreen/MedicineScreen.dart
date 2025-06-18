@@ -76,17 +76,31 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                           childAspectRatio: 8 / 9,
                         ),
                         itemBuilder: (context, index) {
-                          return CardInfoWidget(
-                            image: provider.products[index].image,
-                            name: provider.products[index].name,
-                            onTap: () {
-                              AddMedicineDialog.show(
-                                context,
-                                widget.id,
-                                isEdit: true,
-                                product: provider.products[index],
-                              );
-                            },
+                          return Container(
+                            margin: EdgeInsets.symmetric(horizontal: 10.w),
+                            child: CardInfoWidget(
+                              image: provider.products[index].image,
+                              name: provider.products[index].name,
+                              onTap: () {
+                                AddMedicineDialog.show(
+                                  context,
+                                  widget.id,
+                                  isEdit: true,
+                                  product: provider.products[index],
+                                );
+                              },
+                              onDelete: () async {
+                                setState(() {
+                                  _isLoading = true;
+                                });
+                                await provider.deletProducts(
+                                    widget.id, provider.products[index].id);
+                                await provider.getProductsById(widget.id);
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                              },
+                            ),
                           );
                         },
                       ),

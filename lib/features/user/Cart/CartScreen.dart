@@ -122,6 +122,8 @@ class _CartScreenState extends State<CartScreen> {
                                           : CustomButton(
                                               text: 'تأكيد',
                                               onTap: () async {
+                                                print(
+                                                    "1111111111${provider.cart[0].product.nameAdmin}");
                                                 setState(
                                                     () => isConfirm = true);
                                                 await Provider.of<UserProvider>(
@@ -152,90 +154,91 @@ class _CartScreenState extends State<CartScreen> {
 
   Widget cetItem(CartModel cart) {
     count = cart.quantity;
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 24),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.green),
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            width: 100.w,
-            height: 100.h,
-            alignment: Alignment.topRight,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(cart.product.image),
-              ),
-            ),
-            child: CircleAvatar(
-              maxRadius: 13.sp,
-              backgroundColor: Colors.red,
-              child: IconButton(
-                onPressed: () async {
-                  await Provider.of<UserProvider>(context, listen: false)
-                      .deletProductToCart(idProduct: cart.idcart);
-                },
-                icon: Icon(
-                  Icons.close_sharp,
-                  size: 13.sp,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+    return Stack(
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 24),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.green),
+            borderRadius: BorderRadius.circular(15),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(cart.product.name),
-              SizedBox(height: 10.h),
-              Text(" ${cart.product.price} شيكل"),
-              SizedBox(height: 10.h),
-              Text(" صيدلية ${cart.product.nameAdmin} "),
-            ],
-          ),
-          Container(
-            alignment: Alignment.centerLeft,
-            width: 50.w,
-            padding: EdgeInsets.symmetric(vertical: 8.h),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: AppColors.primary,
-              ),
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _buildCircleButton(Icons.remove, () async {
-                  if (count > 1) {
-                    setState(() => count--);
-                  }
-                  await Provider.of<UserProvider>(context, listen: false)
-                      .editProductToCart(context,
-                          docId: cart.idcart, newQuantity: count);
-                }),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 30.w),
-                  child: Text(
-                    '${cart.quantity}',
-                    style: TextStyle(fontSize: 18),
+              Container(
+                width: 100.w,
+                height: 100.h,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: NetworkImage(cart.product.image),
+                    fit: BoxFit.contain,
                   ),
                 ),
-                _buildCircleButton(Icons.add, () async {
-                  setState(() => count++);
-                  await Provider.of<UserProvider>(context, listen: false)
-                      .editProductToCart(context,
-                          docId: cart.idcart, newQuantity: count);
-                }),
-              ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(cart.product.name),
+                  SizedBox(height: 10.h),
+                  Text(" ${cart.product.price} شيكل"),
+                  SizedBox(height: 10.h),
+                  Text(" صيدلية ${cart.product.nameAdmin} "),
+                ],
+              ),
+              Container(
+                //    alignment: Alignment.centerLeft,
+                width: 50.w,
+                // padding: EdgeInsets.symmetric(vertical: 8.h),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: AppColors.primary,
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _buildCircleButton(Icons.remove, () async {
+                      if (count > 1) {
+                        setState(() => count--);
+                      }
+                      await Provider.of<UserProvider>(context, listen: false)
+                          .editProductToCart(context,
+                              docId: cart.idcart, newQuantity: count);
+                    }),
+                    Text(
+                      '${cart.quantity}',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    _buildCircleButton(Icons.add, () async {
+                      setState(() => count++);
+                      await Provider.of<UserProvider>(context, listen: false)
+                          .editProductToCart(context,
+                              docId: cart.idcart, newQuantity: count);
+                    }),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          top: 0,
+          right: 15.w,
+          child: IconButton(
+            onPressed: () async {
+              await Provider.of<UserProvider>(context, listen: false)
+                  .deletProductToCart(context, idProduct: cart.idcart);
+            },
+            icon: Icon(
+              Icons.close_sharp,
+              size: 24.sp,
+              color: Colors.black,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

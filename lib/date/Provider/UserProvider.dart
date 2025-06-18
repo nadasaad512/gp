@@ -17,6 +17,7 @@ class UserProvider with ChangeNotifier {
   List<CartModel> request = [];
   List<ProductModel> recommended = [];
   ClientUser? user;
+  CartModel? oneProduct;
 
   Future<List<CategoryModel>> fetchCategories() async {
     category = await _userervice.fetchCategories();
@@ -39,6 +40,13 @@ class UserProvider with ChangeNotifier {
 
   Future<List<ProductModel>> fetchProducts({required String name}) async {
     products = await _userervice.fetchProducts(name);
+    notifyListeners();
+    return products;
+  }
+
+  Future<List<ProductModel>> userFetchProducts(
+      {required String userId, required String name}) async {
+    products = await _userervice.userFetchProducts(userId, name);
     notifyListeners();
     return products;
   }
@@ -95,10 +103,11 @@ class UserProvider with ChangeNotifier {
     return products;
   }
 
-  Future<void> deletProductToCart({
+  Future<void> deletProductToCart(
+    BuildContext context, {
     required String idProduct,
   }) async {
-    await _userervice.deletProductToCart(idProduct: idProduct);
+    await _userervice.deletProductToCart(context, idProduct: idProduct);
     await fetchCart();
     notifyListeners();
   }
@@ -112,6 +121,11 @@ class UserProvider with ChangeNotifier {
   Future getRecommended() async {
     recommended = await _userervice.getRecommended();
 
+    notifyListeners();
+  }
+
+  getOneProduct(CartModel cart) async {
+    oneProduct = await _userervice.getOneProduct(cart);
     notifyListeners();
   }
 }

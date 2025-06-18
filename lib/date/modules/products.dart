@@ -8,7 +8,7 @@ class ProductModel {
   final String image;
   final String dec;
   final String price;
-  final String count;
+  final String focus;
 
   ProductModel({
     required this.id,
@@ -18,7 +18,7 @@ class ProductModel {
     required this.image,
     required this.dec,
     required this.price,
-    required this.count,
+    required this.focus,
   });
 
   factory ProductModel.fromMap(Map<String, dynamic> map) {
@@ -30,7 +30,7 @@ class ProductModel {
       image: map['image'] ?? '',
       dec: map['dec'] ?? '',
       price: map['price'] ?? '',
-      count: map['count'] ?? '',
+      focus: map['count'] ?? '',
     );
   }
 
@@ -43,7 +43,7 @@ class ProductModel {
       'image': image,
       'dec': dec,
       'price': price,
-      'count': count,
+      'count': focus,
     };
   }
 }

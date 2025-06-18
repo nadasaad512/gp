@@ -6,6 +6,7 @@ import 'package:gp/features/admain/Notification/NotificationInfoScreen.dart';
 import 'package:gp/features/user/Home/widget/BgHomeWidget.dart';
 import 'package:gp/features/widget/loadingWidget.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class NotificationScreen extends StatefulWidget {
   @override
@@ -24,9 +25,28 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Future<void> _loadNotifications() async {
     await Provider.of<AdminProvider>(context, listen: false)
         .fetchNotification();
+    await _markAllNotificationsAsSeen();
     setState(() {
       _isLoading = false;
     });
+  }
+
+  Future<void> _markAllNotificationsAsSeen() async {
+    final adminProvider = Provider.of<AdminProvider>(context, listen: false);
+    final notifications = adminProvider.notification;
+
+    for (var notif in notifications) {
+      if (!notif.isSeen) {
+        await FirebaseFirestore.instance
+            .collection('admin_users')
+            .doc(notif.idAdmin)
+            .collection('Notification')
+            .doc(notif.id)
+            .update({'isSeen': true});
+      }
+    }
+
+    await adminProvider.fetchNotification();
   }
 
   @override
