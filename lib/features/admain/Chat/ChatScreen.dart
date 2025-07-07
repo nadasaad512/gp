@@ -13,7 +13,7 @@ class ChatScreen extends StatelessWidget {
           BgHomeWidget(),
           SizedBox(height: 200.h),
           GestureDetector(
-            onTap: openWhatsApp,
+            onTap: () => openWhatsApp(context),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -29,11 +29,6 @@ class ChatScreen extends StatelessWidget {
                     fontSize: 18.sp,
                   ),
                 ),
-                TextButton(onPressed: openWhatsApp2, child: Text("try 2")),
-                TextButton(onPressed: openWhatsApp3, child: Text("try 3")),
-                TextButton(onPressed: openWhatsApp4, child: Text("try 4")),
-                TextButton(onPressed: openWhatsApp5, child: Text("try 5")),
-                TextButton(onPressed: openWhatsApp6, child: Text("try 6")),
               ],
             ),
           ),
@@ -42,98 +37,24 @@ class ChatScreen extends StatelessWidget {
     );
   }
 
-  // void openWhatsApp() async {
-  //   final phoneNumber = '972599697166';
+  Future<void> openWhatsApp(BuildContext context) async {
+    final Uri url = Uri.parse("https://wa.me/972599697166");
 
-  //   final Uri url = Uri.parse("https://wa.me/$phoneNumber");
+    // جربي مباشرة فتح التطبيق الخارجي
+    bool success = await launchUrl(
+      url,
+      mode: LaunchMode.externalApplication,
+    ).catchError((e) {
+      print("فشل في التطبيق الخارجي: $e");
+      return false;
+    });
 
-  //   if (await canLaunchUrl(url)) {
-  //     await launchUrl(url, mode: LaunchMode.externalApplication);
-  //     //await launchUrl(url, mode: LaunchMode.platformDefault);
-
-  //   } else {
-  //     print("لا يمكن فتح واتساب");
-  //   }
-  // }
-
-  void openWhatsApp() async {
-    final phoneNumber = '972599697166';
-    final url = 'https://wa.me/$phoneNumber';
-
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      print("لا يمكن فتح واتساب");
-    }
-  }
-
-  void openWhatsApp2() async {
-    final phoneNumber = '972599697166';
-    final Uri url = Uri.parse("https://wa.me/$phoneNumber");
-
-    if (await canLaunchUrl(url)) {
-      await launchUrl(
-        url,
-        mode: LaunchMode.externalApplication, // ← مهم جدًا لواتساب
+    if (!success && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("تعذر فتح واتساب. تأكد أن التطبيق مثبت."),
+        ),
       );
-    } else {
-      print("لا يمكن فتح واتساب");
-    }
-  }
-
-  void openWhatsApp3() async {
-    final phoneNumber = '972599697166';
-    final Uri url = Uri.parse("https://wa.me/$phoneNumber");
-
-    if (await canLaunchUrl(url)) {
-      await launchUrl(
-        url,
-        mode: LaunchMode.inAppWebView, // ← مهم جدًا لواتساب
-      );
-    } else {
-      print("لا يمكن فتح واتساب");
-    }
-  }
-
-  void openWhatsApp4() async {
-    final phoneNumber = '972599697166';
-    final Uri url = Uri.parse("https://wa.me/$phoneNumber");
-
-    if (await canLaunchUrl(url)) {
-      await launchUrl(
-        url,
-        mode: LaunchMode.externalNonBrowserApplication, // ← مهم جدًا لواتساب
-      );
-    } else {
-      print("لا يمكن فتح واتساب");
-    }
-  }
-
-  void openWhatsApp5() async {
-    final phoneNumber = '972599697166';
-    final Uri url = Uri.parse("https://wa.me/$phoneNumber");
-
-    if (await canLaunchUrl(url)) {
-      await launchUrl(
-        url,
-        mode: LaunchMode.platformDefault, // ← مهم جدًا لواتساب
-      );
-    } else {
-      print("لا يمكن فتح واتساب");
-    }
-  }
-
-  void openWhatsApp6() async {
-    final phoneNumber = '972599697166';
-    final Uri url = Uri.parse("https://wa.me/$phoneNumber");
-
-    if (await canLaunchUrl(url)) {
-      await launchUrl(
-        url,
-        mode: LaunchMode.inAppBrowserView, // ← مهم جدًا لواتساب
-      );
-    } else {
-      print("لا يمكن فتح واتساب");
     }
   }
 }

@@ -31,11 +31,15 @@ class AddressWidget extends StatelessWidget {
         ),
         InfoItem(address, Icons.location_on),
         SizedBox(
-          height: 30.h,
+          height: 10.h,
+        ),
+        InfoItem(phone, Icons.phone),
+        SizedBox(
+          height: 20.h,
         ),
         TextTitle("نبذة عنا :"),
         SizedBox(
-          height: 20.h,
+          height: 10.h,
         ),
         Padding(
           padding: EdgeInsets.only(right: 20.w),
@@ -45,65 +49,66 @@ class AddressWidget extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: 20.h,
+          height: 10.h,
         ),
-        isAdmin == false
-            ? Column(
-                children: [
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: Text(
-                      "      اطلب عبر الروشتة      ",
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 20.h,
-                  ),
-                  GestureDetector(
-                      onTap: () => openWhatsApp(),
-                      child:
-                          Center(child: Image.asset("assets/images/prov.png"))),
-                  SizedBox(
-                    height: 20.h,
-                  ),
-                  Text(
-                    "أرفق صورة",
-                    style: TextStyle(
-                        fontSize: 16.sp,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w500),
-                  )
-                ],
-              )
-            : SizedBox.shrink(),
-        isAdmin == false
-            ? SizedBox(
-                height: 20.h,
-              )
-            : SizedBox.shrink(),
-        isAdmin == false
-            ? GestureDetector(
-                onTap: () => openWhatsApp(),
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 16.w),
-                  child: Text(
-                    "اسأل صيدلي ",
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      color: AppColors.primary,
-                      decoration: TextDecoration.underline,
-                      decorationColor: AppColors.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              )
-            : SizedBox.shrink()
+
+        // isAdmin == false
+        //     ? Column(
+        //         children: [
+        //           Align(
+        //             alignment: Alignment.topRight,
+        //             child: Text(
+        //               "      اطلب عبر الروشتة      ",
+        //               style: TextStyle(
+        //                 fontSize: 18.sp,
+        //                 color: AppColors.primary,
+        //                 fontWeight: FontWeight.w700,
+        //               ),
+        //             ),
+        //           ),
+        //           SizedBox(
+        //             height: 20.h,
+        //           ),
+        //           GestureDetector(
+        //               onTap: () => openWhatsApp(context),
+        //               child:
+        //                   Center(child: Image.asset("assets/images/prov.png"))),
+        //           SizedBox(
+        //             height: 20.h,
+        //           ),
+        //           Text(
+        //             "أرفق صورة",
+        //             style: TextStyle(
+        //                 fontSize: 16.sp,
+        //                 color: AppColors.primary,
+        //                 fontWeight: FontWeight.w500),
+        //           )
+        //         ],
+        //       )
+        //     : SizedBox.shrink(),
+        // isAdmin == false
+        //     ? SizedBox(
+        //         height: 20.h,
+        //       )
+        //     : SizedBox.shrink(),
+        // isAdmin == false
+        //     ? GestureDetector(
+        //         onTap: () => openWhatsApp(context),
+        //         child: Container(
+        //           margin: EdgeInsets.symmetric(horizontal: 16.w),
+        //           child: Text(
+        //             "اسأل صيدلي ",
+        //             style: TextStyle(
+        //               fontSize: 18.sp,
+        //               color: AppColors.primary,
+        //               decoration: TextDecoration.underline,
+        //               decorationColor: AppColors.primary,
+        //               fontWeight: FontWeight.w700,
+        //             ),
+        //           ),
+        //         ),
+        //       )
+        //     : SizedBox.shrink()
       ],
     );
   }
@@ -143,14 +148,36 @@ class AddressWidget extends StatelessWidget {
     );
   }
 
-  void openWhatsApp() async {
-    final phoneNumber = '972592310956';
-    final url = 'https://wa.me/$phoneNumber';
+  Future<void> openWhatsApp(BuildContext context) async {
+    final Uri url = Uri.parse("https://wa.me/972592310956");
 
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      print("لا يمكن فتح واتساب");
+    // جرب تفتح داخل التطبيق (WebView)
+    bool success = await launchUrl(
+      url,
+      mode: LaunchMode.inAppWebView,
+    ).catchError((e) {
+      print("فشل في WebView: $e");
+      return false;
+    });
+
+    // إذا فشل داخليًا، جرب خارجيًا
+    if (!success) {
+      success = await launchUrl(
+        url,
+        mode: LaunchMode.externalApplication,
+      ).catchError((e) {
+        print("فشل في التطبيق الخارجي: $e");
+        return false;
+      });
+    }
+
+    // إذا كل المحاولات فشلت
+    if (!success && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("تعذر فتح واتساب. تأكد أن التطبيق مثبت."),
+        ),
+      );
     }
   }
 

@@ -9,6 +9,7 @@ import 'package:gp/features/user/products/ProductScreen.dart';
 import 'package:gp/features/widget/BgProfileAdmainWidget.dart';
 import 'package:gp/features/widget/loadingWidget.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class showProfileAdmin extends StatefulWidget {
   String idAdmin;
@@ -44,6 +45,42 @@ class _showProfileAdminState extends State<showProfileAdmin> {
     return Consumer<AdminProvider>(
       builder: (context, adminProvider, child) {
         return Scaffold(
+          floatingActionButton: Container(
+            margin: EdgeInsets.only(bottom: 20.h),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                FloatingActionButton.extended(
+                  heroTag: "btn_roshteh",
+                  onPressed: () => _openWhatsApp(context, adminUser!.phone),
+                  backgroundColor: AppColors.primary,
+                  icon: Icon(Icons.image, color: Colors.white),
+                  label: Text(
+                    " اطلب الروشتة",
+                    style: TextStyle(fontSize: 14.sp, color: Colors.white),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.r),
+                  ),
+                ),
+                SizedBox(width: 10.h),
+                FloatingActionButton.extended(
+                  heroTag: "b_roshteh",
+                  onPressed: () => _openWhatsApp(context, adminUser!.phone),
+                  backgroundColor: AppColors.primary,
+                  icon: Icon(Icons.chat_rounded, color: Colors.white),
+                  label: Text(
+                    "اسأل صيدلي",
+                    style: TextStyle(fontSize: 14.sp, color: Colors.white),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.r),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           backgroundColor: AppColors.white,
           body: _isLoading
               ? loadingWidget()
@@ -67,7 +104,7 @@ class _showProfileAdminState extends State<showProfileAdmin> {
                       phone: adminUser!.phone,
                       isAdmin: false,
                     ),
-                    SizedBox(height: 20.h),
+                    SizedBox(height: 10.h),
                     TextTitle('الأقسام'),
                     if (adminProvider.userAdminCategory.isNotEmpty)
                       Expanded(
@@ -147,5 +184,40 @@ class _showProfileAdminState extends State<showProfileAdmin> {
         ),
       ),
     );
+  }
+
+  Future<void> _openWhatsApp(BuildContext context, String phone) async {
+    // تأكد من أن الرقم يحتوي فقط على أرقام
+    phone = phone.replaceAll(RegExp(r'\D'), '');
+
+    // جهز قائمة التجارب بالترتيب
+    List<String> prefixes = ['972', '970'];
+    bool success = false;
+
+    for (String prefix in prefixes) {
+      String formattedPhone =
+          phone.startsWith(prefix) ? phone : '$prefix$phone';
+      final Uri url = Uri.parse("https://wa.me/$phone");
+
+      try {
+        success = await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
+      } catch (e) {
+        print("فشل فتح الرابط باستخدام $prefix: $e");
+        success = false;
+      }
+
+      if (success) break; // إذا نجحت محاولة، أوقف التكرار
+    }
+
+    if (!success && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("تعذر فتح واتساب. تأكد أن التطبيق مثبت."),
+        ),
+      );
+    }
   }
 }

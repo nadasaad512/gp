@@ -30,6 +30,13 @@ class _AdmainMainScreenState extends State<AdmainMainScreen> {
     'assets/icons/notifi_icon.svg',
     'assets/icons/chat_icon.svg',
   ];
+  final List<String> titles = [
+    'حسابي',
+    'الرئيسية',
+    'الاشعارات',
+    'راسلنا',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +51,7 @@ class _AdmainMainScreenState extends State<AdmainMainScreen> {
       backgroundColor: AppColors.white,
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomAppBar(
+        height: 100.h,
         color: AppColors.white,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -67,6 +75,7 @@ class _AdmainMainScreenState extends State<AdmainMainScreen> {
                   BuildTabIconWidget(
                     index: index,
                     icons: icons,
+                    title: titles[index],
                     isSelected: _selectedIndex == index,
                     onTap: () {
                       setState(() {

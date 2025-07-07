@@ -15,25 +15,33 @@ class NotificationScreen extends StatefulWidget {
 
 class _NotificationScreenState extends State<NotificationScreen> {
   bool _isLoading = true;
+  late AdminProvider _adminProvider;
 
   @override
   void initState() {
     super.initState();
-    _loadNotifications();
+    // الحصول على المزود بدون استماع
+    Future.microtask(() {
+      _adminProvider = Provider.of<AdminProvider>(context, listen: false);
+      _loadNotifications();
+    });
+  }
+
+  @override
+  void dispose() {
+    _markAllNotificationsAsSeen();
+    super.dispose();
   }
 
   Future<void> _loadNotifications() async {
-    await Provider.of<AdminProvider>(context, listen: false)
-        .fetchNotification();
-    await _markAllNotificationsAsSeen();
+    await _adminProvider.fetchNotification();
     setState(() {
       _isLoading = false;
     });
   }
 
   Future<void> _markAllNotificationsAsSeen() async {
-    final adminProvider = Provider.of<AdminProvider>(context, listen: false);
-    final notifications = adminProvider.notification;
+    final notifications = _adminProvider.notification;
 
     for (var notif in notifications) {
       if (!notif.isSeen) {
@@ -46,14 +54,16 @@ class _NotificationScreenState extends State<NotificationScreen> {
       }
     }
 
-    await adminProvider.fetchNotification();
+    await _adminProvider.fetchNotification();
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<AdminProvider>(
       builder: (context, adminProvider, child) {
-        final notifications = adminProvider.notification;
+        final notifications = adminProvider.notification
+          ..sort(
+              (a, b) => b.createdAt!.compareTo(a.createdAt!)); // ← هنا الترتيب
 
         return Scaffold(
           backgroundColor: AppColors.white,
@@ -73,6 +83,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             itemCount: notifications.length,
                             itemBuilder: (BuildContext context, int index) {
                               final notif = notifications[index];
+
                               return GestureDetector(
                                 onTap: () {
                                   Navigator.push(
@@ -89,6 +100,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                       horizontal: 10.w, vertical: 6.h),
                                   padding: EdgeInsets.all(10.w),
                                   decoration: BoxDecoration(
+                                    color: notifications[index].isSeen
+                                        ? Color.fromARGB(255, 245, 255, 245)
+                                        : Colors.white,
                                     border:
                                         Border.all(color: AppColors.primary),
                                     borderRadius: BorderRadius.circular(12.r),
@@ -97,6 +111,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
+                                      if (notif.createdAt != null)
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            "${notif.createdAt!.toLocal().toString().split(' ')[0]}",
+                                            textAlign: TextAlign.left,
+                                            style: TextStyle(
+                                                fontSize: 10.sp,
+                                                color: Colors.grey[500]),
+                                          ),
+                                        ),
+                                      SizedBox(height: 10.h),
                                       Text("العميل: ${notif.nameUser}",
                                           style: TextStyle(
                                               fontWeight: FontWeight.bold)),

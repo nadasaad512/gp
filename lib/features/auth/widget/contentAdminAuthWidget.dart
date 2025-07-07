@@ -18,6 +18,7 @@ class ContentAdminAuthWidget extends StatefulWidget {
   final TextEditingController mobileController;
   final TextEditingController addressController;
   final TextEditingController descController;
+  final Function(String)? onPrefixChanged;
 
   final FocusNode usernameFocus;
   final FocusNode mobileFocus;
@@ -43,6 +44,7 @@ class ContentAdminAuthWidget extends StatefulWidget {
     required this.addressFocus,
     required this.descFocus,
     required this.onImageSelected,
+    required this.onPrefixChanged,
   });
 
   @override
@@ -52,6 +54,7 @@ class ContentAdminAuthWidget extends StatefulWidget {
 class _ContentAdminAuthWidgetState extends State<ContentAdminAuthWidget> {
   String? selectedProvince;
   String? selectedArea;
+  String _selectedPrefix = '+970';
 
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
@@ -152,12 +155,57 @@ class _ContentAdminAuthWidgetState extends State<ContentAdminAuthWidget> {
             focusNode: widget.descFocus,
           ),
           SizedBox(height: 20.h),
-          CustomInputField(
-            label: 'رقم الجوال  ',
-            icon: Icons.phone,
-            controller: widget.mobileController,
-            focusNode: widget.mobileFocus,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Expanded(
+                child: CustomInputField(
+                  label: 'رقم الجوال',
+                  icon: Icons.phone,
+                  controller: widget.mobileController,
+                  focusNode: widget.mobileFocus,
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Container(
+                width: 100.w,
+                height: 45.h,
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  // border: Border.,
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: DropdownButton<String>(
+                  value: _selectedPrefix,
+                  underline: SizedBox(),
+                  isExpanded: true,
+                  icon: Icon(Icons.arrow_drop_down),
+                  items: ['+970', '+972'].map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value, style: TextStyle(fontSize: 14.sp)),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedPrefix = value!;
+                    });
+                    if (widget.onPrefixChanged != null) {
+                      widget.onPrefixChanged!(_selectedPrefix);
+                    }
+                  },
+                ),
+              ),
+            ],
           ),
+
+          // CustomInputField(
+          //   label: 'رقم الجوال  ',
+          //   icon: Icons.phone,
+          //   controller: widget.mobileController,
+          //   focusNode: widget.mobileFocus,
+          // ),
           SizedBox(height: 20.h),
           CustomInputField(
             label: 'الايميل',

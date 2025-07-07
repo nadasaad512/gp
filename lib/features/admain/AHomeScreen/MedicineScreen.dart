@@ -90,15 +90,44 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                                 );
                               },
                               onDelete: () async {
-                                setState(() {
-                                  _isLoading = true;
-                                });
-                                await provider.deletProducts(
-                                    widget.id, provider.products[index].id);
-                                await provider.getProductsById(widget.id);
-                                setState(() {
-                                  _isLoading = false;
-                                });
+                                bool confirm = await showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: Text("تأكيد الحذف"),
+                                    content: Text(
+                                        "هل أنت متأكد أنك تريد حذف هذا الدواء؟"),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(false),
+                                        child: Text(
+                                          "إلغاء",
+                                          style: TextStyle(color: Colors.black),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(true),
+                                        child: Text(
+                                          "نعم، حذف",
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+
+                                if (confirm == true) {
+                                  setState(() {
+                                    _isLoading = true;
+                                  });
+                                  await provider.deletProducts(
+                                      widget.id, provider.products[index].id);
+                                  await provider.getProductsById(widget.id);
+                                  setState(() {
+                                    _isLoading = false;
+                                  });
+                                }
                               },
                             ),
                           );

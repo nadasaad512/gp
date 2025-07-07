@@ -22,6 +22,7 @@ class _adminSignUpScreenState extends State<adminSignUpScreen> {
   final addressController = TextEditingController();
   final decController = TextEditingController();
   File? selectedImage;
+  String phonePrefix = '+970'; // القيمة الافتراضية
 
   final usernameFocus = FocusNode();
   final mobileFocus = FocusNode();
@@ -63,6 +64,9 @@ class _adminSignUpScreenState extends State<adminSignUpScreen> {
               surePasswordController: surepasswordController,
               onImageSelected: (image) {
                 selectedImage = image; // ✅ حفظ الصورة
+              },
+              onPrefixChanged: (prefix) {
+                phonePrefix = prefix;
               },
             ),
             Provider.of<AuthProvider>(context).isSignUp
@@ -111,7 +115,7 @@ class _adminSignUpScreenState extends State<adminSignUpScreen> {
                       }
 
                       AdminUser user = AdminUser(
-                          phone: mobileController.text,
+                          phone: phonePrefix + mobileController.text,
                           address: addressController.text,
                           email: emailController.text,
                           desc: decController.text,

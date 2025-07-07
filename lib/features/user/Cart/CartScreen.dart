@@ -228,8 +228,35 @@ class _CartScreenState extends State<CartScreen> {
           right: 15.w,
           child: IconButton(
             onPressed: () async {
-              await Provider.of<UserProvider>(context, listen: false)
-                  .deletProductToCart(context, idProduct: cart.idcart);
+              bool confirm = await showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text("تأكيد الحذف"),
+                  content: Text(
+                      "هل أنت متأكد أنك تريد إزالة هذا المنتج من عربة التسوق؟"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text(
+                        "إلغاء",
+                        style: TextStyle(color: Colors.black),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: Text(
+                        "نعم، حذف",
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirm == true) {
+                await Provider.of<UserProvider>(context, listen: false)
+                    .deletProductToCart(context, idProduct: cart.idcart);
+              }
             },
             icon: Icon(
               Icons.close_sharp,

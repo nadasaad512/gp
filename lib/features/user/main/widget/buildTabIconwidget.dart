@@ -5,9 +5,10 @@ import '../../../../core/app_colors.dart';
 
 class BuildTabIconWidget extends StatelessWidget {
   final int index;
-  final List<String> icons; // <-- Now List of String paths
+  final List<String> icons;
   final bool isSelected;
   final VoidCallback onTap;
+  final String title; // ⬅️ أضف هذا السطر
 
   const BuildTabIconWidget({
     Key? key,
@@ -15,6 +16,7 @@ class BuildTabIconWidget extends StatelessWidget {
     required this.icons,
     required this.isSelected,
     required this.onTap,
+    required this.title, // ⬅️ أضف هذا السطر
   }) : super(key: key);
 
   @override
@@ -22,42 +24,53 @@ class BuildTabIconWidget extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(100.r),
-      hoverColor: AppColors.white,
-      focusColor: AppColors.white,
-      splashColor: AppColors.white,
-      highlightColor: AppColors.white,
-      child: Transform.translate(
-        offset: isSelected ? Offset(0, -25.h) : Offset(0, 0),
-        child: AnimatedContainer(
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-          height: 60.h,
-          width: 60.w,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isSelected ? AppColors.primary : AppColors.white,
-            boxShadow: isSelected
-                ? [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 10,
-                offset: Offset(0, 4),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Transform.translate(
+            offset: isSelected ? Offset(0, -10.h) : Offset(0, 0),
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+              height: 45.h,
+              width: 45.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isSelected ? AppColors.primary : AppColors.white,
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: Colors.transparent,
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ]
+                    : [],
+                border: Border.all(
+                  color: Colors.white,
+                  width: 1,
+                ),
               ),
-            ]
-                : [],
-            border: Border.all(
-              color: Colors.white,
-              width: 1,
+              alignment: Alignment.center,
+              child: SvgPicture.asset(
+                icons[index],
+                color: isSelected ? AppColors.white : AppColors.primary,
+                height: 25.h,
+                width: 25.w,
+              ),
             ),
           ),
-          alignment: Alignment.center,
-          child: SvgPicture.asset(
-            icons[index],
-            color: isSelected ? AppColors.white : AppColors.primary,
-            height: 25.h,
-            width: 25.w,
+          SizedBox(height: 4.h),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: isSelected ? AppColors.primary : Colors.black54,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
-        ),
+          SizedBox(height: 4.h),
+        ],
       ),
     );
   }

@@ -16,7 +16,6 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 2;
-
   final List<Widget> _screens = [
     CartScreen(),
     RequestScreen(),
@@ -32,6 +31,13 @@ class _MainScreenState extends State<MainScreen> {
     'assets/icons/profile_icon.svg',
     'assets/icons/info_icon.svg',
   ];
+  final List<String> titles = [
+    'السلة',
+    'الطلبات',
+    'الرئيسية',
+    'الحساب',
+    'معلومات',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +45,7 @@ class _MainScreenState extends State<MainScreen> {
       backgroundColor: AppColors.white,
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomAppBar(
+        height: 100.h,
         color: AppColors.white,
         child: Row(
           children: List.generate(icons.length, (index) {
@@ -47,6 +54,7 @@ class _MainScreenState extends State<MainScreen> {
               child: BuildTabIconWidget(
                 index: index,
                 icons: icons,
+                title: titles[index],
                 isSelected: _selectedIndex == index,
                 onTap: () {
                   setState(() {
